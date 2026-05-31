@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Authentication System</title>
+  <style>
+    :root{color-scheme:light;}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6fb;}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;}
+    .card{background:#fff;border:1px solid #e6e8ef;border-radius:14px;box-shadow:0 8px 26px rgba(18,38,63,.06);width:min(420px,100%);padding:24px;box-sizing:border-box;}
+    h1{font-size:24px;margin:0 0 4px;color:#111827;}
+    p.subtitle{font-size:14px;color:#6b7280;margin:0 0 20px;}
+    .row{display:grid;gap:14px;}
+    .grid-2{display:grid;grid-template-cols:1fr 1fr;gap:12px;}
+    label{font-weight:600;font-size:13px;color:#2b3445;display:block;margin-bottom:6px;}
+    input{width:100%;padding:11px 12px;border:1px solid #d6d9e2;border-radius:10px;outline:none;box-sizing:border-box;font-size:14px;}
+    input:focus{border-color:#4c7dff;box-shadow:0 0 0 3px rgba(76,125,255,.15);} 
+    button{width:100%;padding:12px;border:0;border-radius:10px;background:#111827;color:#fff;font-weight:700;cursor:pointer;font-size:14px;margin-top:6px;}
+    button:active{transform:translateY(1px);} 
+    .msg{margin-top:14px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:500;display:none;}
+    .error{display:block;background:#fef2f2;color:#b42318;border:1px solid #fecaca;}
+    .success{display:block;background:#f0fdf4;color:#067d2a;border:1px solid #bbf7d0;}
+    .links{display:flex;justify-content:space-between;margin-top:16px;font-size:13px;color:#4b5563;}
+    .links a{color:#2563eb;text-decoration:none;font-weight:600;}
+    .links a:hover{text-decoration:underline;}
+    .hide{display:none !important;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 id="formTitle">Welcome Back</h1>
+      <p id="formSubtitle" class="subtitle">Sign in to manage your profile</p>
+
+      <form id="authForm" class="row" autocomplete="on" novalidate>
+        
+        <div id="registrationFields" class="row hide">
+          <div class="grid-2">
+            <div>
+              <label for="firstName">First Name</label>
+              <input id="firstName" name="firstName" type="text" placeholder="John" />
+            </div>
+            <div>
+              <label for="lastName">Last Name</label>
+              <input id="lastName" name="lastName" type="text" placeholder="Doe" />
+            </div>
+          </div>
+          <div>
+            <label for="location">Location</label>
+            <input id="location" name="location" type="text" placeholder="e.g. Kigali, Rwanda" />
+          </div>
+        </div>
+
+        <div>
+          <label for="email">Email Address</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required />
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" id="submitBtn">Sign In</button>
+
+        <div id="message" class="msg" aria-live="polite"></div>
+
+        <div class="links">
+          <span id="switchPrompt">New here?</span>
+          <a href="#" id="toggleModeLink">Create account</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // State Tracking
+    let isLoginMode = true;
+    const BACKEND_URL = 'http://localhost:5000/api';
+
+    // DOM Elements
+    const form = document.getElementById('authForm');
+    const formTitle = document.getElementById('formTitle');
+    const formSubtitle = document.getElementById('formSubtitle');
+    const registrationFields = document.getElementById('registrationFields');
+    const submitBtn = document.getElementById('submitBtn');
+    const messageEl = document.getElementById('message');
+    const switchPrompt = document.getElementById('switchPrompt');
+    const toggleModeLink = document.getElementById('toggleModeLink');
+
+    // Inputs
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    const locationInput = document.getElementById('location');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+
+    // Toggle between Login and Registration views
+    toggleModeLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      isLoginMode = !isLoginMode;
+      clearMessage();
+
+      if (isLoginMode) {
+        formTitle.textContent = 'Welcome Back';
+        formSubtitle.textContent = 'Sign in to manage your profile';
+        registrationFields.classList.add('hide');
+        submitBtn.textContent = 'Sign In';
+        switchPrompt.textContent = 'New here?';
+        toggleModeLink.textContent = 'Create account';
+      } else {
+        formTitle.textContent = 'Create Account';
+        formSubtitle.textContent = 'Join us and store your database profile';
+        registrationFields.classList.remove('hide');
+        submitBtn.textContent = 'Sign Up';
+        switchPrompt.textContent = 'Already have an account?';
+        toggleModeLink.textContent = 'Sign in';
+      }
+    });
+
+    function showStatus(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = 'msg ' + type;
+    }
+
+    function clearMessage() {
+      messageEl.textContent = '';
+      messageEl.className = 'msg';
+    }
+
+    // Handle Form Processing and Fetch API connection
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessage();
+
+      const email = emailInput.value.trim();
+      const password = passwordEl.value;
+
+      // Base Client-side validations
+      if (!email || !password) {
+        showStatus('Please fill in all mandatory account credentials.', 'error');
+        return;
+      }
+
+      // Payload initialization mapping exactly to backend requirements
+      let payload = { email, password };
+      let endpoint = `${BACKEND_URL}/login`;
+
+      if (!isLoginMode) {
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
+        const location = locationInput.value.trim();
+
+        if (!firstName || !lastName || !location) {
+          showStatus('All profile fields are required for database registration.', 'error');
+          return;
+        }
+
+        payload = { firstName, lastName, location, email, password };
+        endpoint = `${BACKEND_URL}/register`;
+      }
+
+      try {
+        // Execute real network fetching
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          // Display structured backend error alerts (e.g., 401 Unauthorized or 409 Conflict)
+          showStatus(result.message || 'An error occurred during verification.', 'error');
+          return;
+        }
+
+        // Handle success outputs
+        showStatus(result.message, 'success');
+
+        if (isLoginMode && result.token) {
+          // Secure client web token storage 
+          localStorage.setItem('authToken', result.token);
+          showStatus(`Success! Welcome back, ${result.user.firstName}.`, 'success');
+        } else if (!isLoginMode) {
+          // Switch to login automatically after smooth registration
+          setTimeout(() => {
+            toggleModeLink.click();
+            showStatus('Registration successful! Please login with your new account.', 'success');
+          }, 1500);
+        }
+
+      } catch (err) {
+        showStatus('Unable to reach backend database server. Verify node status.', 'error');
+        console.error('Connection failure:', err);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Login</title>
+  <style>
+    :root{color-scheme:light;}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6fb;}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;}
+    .card{background:#fff;border:1px solid #e6e8ef;border-radius:14px;box-shadow:0 8px 26px rgba(18,38,63,.06);width:min(420px,100%);padding:20px;}
+    h1{font-size:20px;margin:0 0 14px;}
+    .row{display:grid;gap:12px;}
+    label{font-weight:600;font-size:13px;color:#2b3445;display:block;margin-bottom:6px;}
+    input{width:100%;padding:11px 12px;border:1px solid #d6d9e2;border-radius:10px;outline:none;}
+    input:focus{border-color:#4c7dff;box-shadow:0 0 0 3px rgba(76,125,255,.15);} 
+    button{width:100%;padding:11px 12px;border:0;border-radius:10px;background:#111827;color:#fff;font-weight:700;cursor:pointer;}
+    button:active{transform:translateY(1px);} 
+    .msg{margin-top:12px;font-size:13px;color:#5b6473;min-height:18px;}
+    .error{color:#b42318;}
+    .success{color:#067d2a;}
+    .links{display:flex;justify-content:space-between;margin-top:14px;font-size:13px;color:#4b5563;}
+    .links a{color:#2563eb;text-decoration:none;}
+    .links a:hover{text-decoration:underline;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Login</h1>
+
+      <form id="loginForm" class="row" autocomplete="on" novalidate>
+        <div>
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="your name" required />
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••" required minlength="4" />
+        </div>
+
+        <button type="submit">Sign in</button>
+
+        <div id="message" class="msg" aria-live="polite"></div>
+
+        <div class="links">
+          <span>New here?</span>
+          <a href="#" onclick="event.preventDefault();">Create account</a>
+        </div>
+      </form>
+
+      <p style="margin:14px 0 0; font-size:12px; color:#6b7280;">
+        Note: This is a frontend-only demo. No real authentication.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const usernameEl = document.getElementById('username');
+    const passwordEl = document.getElementById('password');
+    const messageEl = document.getElementById('message');
+
+    function setMessage(text, kind) {
+      messageEl.textContent = text;
+      messageEl.className = 'msg' + (kind ? ' ' + kind : '');
+    }
+
+    // Log values on input change
+    usernameEl.addEventListener('input', (e) => {
+      console.log('username changed:', e.target.value);
+    });
+    passwordEl.addEventListener('input', (e) => {
+      console.log('password changed:', e.target.value);
+    });
+
+    // Show message on blur
+    usernameEl.addEventListener('blur', () => {
+      setMessage(usernameEl.value ? `Username captured: ${usernameEl.value}` : 'Username is empty.', usernameEl.value ? 'success' : 'error');
+    });
+    passwordEl.addEventListener('blur', () => {
+      setMessage(passwordEl.value ? 'Password field updated.' : 'Password is empty.', passwordEl.value ? 'success' : 'error');
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const username = usernameEl.value.trim();
+      const password = passwordEl.value;
+
+      if (!username) {
+        setMessage('Please enter a username.', 'error');
+        return;
+      }
+      if (!password || password.length < 4) {
+        setMessage('Please enter a password (min 4 characters).', 'error');
+        return;
+      }
+
+      // Frontend-only: show an alert on submit
+      alert(`Signed in (demo)\nUsername: ${username}`);
+      setMessage('Signed in (demo).', 'success');
+
+      // Optional: simulate clearing
+      // form.reset();
+    });
+  </script>
+</body>
+</html>
+
