@@ -1,0 +1,20 @@
+<script>
+  // 1) RUNS AUTOMATICALLY WHEN THE PAGE LOADS
+  window.addEventListener('DOMContentLoaded', () => {
+    // Look inside the browser storage for the token we saved during login
+    const token = localStorage.getItem('authToken');
+    const welcomeEl = document.getElementById('welcome');
+
+    if (token) {
+      // If the token is there, change the text to green
+      welcomeEl.textContent = 'Welcome back, Certified Developer! Active Auth Session detected.';
+      welcomeEl.style.color = 'green';
+    } else {
+      // If no token is found, warn them
+      welcomeEl.textContent = 'Guest Mode: Access Restricted. Please log in first.';
+      welcomeEl.style.color = 'orange';
+    }
+  });
+
+  // ... rest of your existing practice scripts (online/offline checking, resize handlers, etc.)
+</script>
